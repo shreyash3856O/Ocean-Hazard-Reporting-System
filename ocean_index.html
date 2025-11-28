@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OceanWatch - Crowdsourced Ocean Hazard Reporting</title>
+    <link rel="icon" type="image/x-icon" href="http://static.photos/blue/320x240/1">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.globe.min.js"></script>
+    <style>
+        .hero-bg {
+            background: linear-gradient(135deg, #0f4c75 0%, #3282b8 50%, #0f4c75 100%);
+        }
+        .feature-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .map-container {
+            height: 500px;
+            background-image: url('http://static.photos/aerial/1200x630/42');
+            background-size: cover;
+            background-position: center;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i data-feather="navigation" class="text-blue-600 mr-2"></i>
+                        <span class="font-bold text-xl text-blue-800">OceanWatch</span>
+                    </div>
+                    <div class="hidden md:ml-10 md:flex md:space-x-8">
+                        <a href="ocean_index.html" class="text-blue-600 border-b-2 border-blue-600 px-1 pt-1 text-sm font-medium">Home</a>
+                        <a href="dashboard.html" class="text-gray-500 hover:text-gray-700 px-1 pt-1 text-sm font-medium">Dashboard</a>
+
+                        
+    
+                        <a href="report.html" class="text-gray-500 hover:text-gray-700 px-1 pt-1 text-sm font-medium">Report</a>
+                        <a href="analytics.html" class="text-gray-500 hover:text-gray-700 px-1 pt-1 text-sm font-medium">Analytics</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+  <!-- Sign In -->
+                  <a href="sign_in.html" 
+                   class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition">
+                   Sign In
+                  </a>
+
+  <!-- Sign Up -->
+                  <a href="sign_up.html" 
+                     class="bg-gray-100 text-blue-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-200 transition dark:bg-gray-700 dark:text-blue-400 dark:hover:bg-gray-600">
+                     Sign Up
+                  </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!--dashboard integration ke liye-->>
+
+
+
+
+    <!-- Hero Section -->
+    <div id="hero-bg" class="hero-bg pt-16 pb-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 text-white py-20" data-aos="fade-right">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-6">Real-time Ocean Hazard Reporting Platform</h1>
+                    <p class="text-xl mb-8">Crowdsourced hazard reporting and social media analytics for coastal safety</p>
+                    <div class="flex space-x-4">
+                      <a href="report.html" 
+                          class="bg-white text-blue-700 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition">
+                          Report Hazard
+                      </a>
+
+                      <a href="dashboard.html" 
+                      class="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-700 transition">
+                      View Dashboard
+                      </a>
+                    </div>
+
+                </div>
+                <div class="md:w-1/2 py-10" data-aos="fade-left">
+                    <div class="bg-white rounded-xl p-6 shadow-2xl">
+                        <div class="map-container"></div>
+                        <div class="mt-4 flex justify-between">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-700">1,248</div>
+                                <div class="text-gray-600">Reports</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-600">98%</div>
+                                <div class="text-gray-600">Verification</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-red-600">42</div>
+                                <div class="text-gray-600">Active Alerts</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Key Features</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Our integrated platform combines citizen reporting with advanced analytics for comprehensive ocean hazard monitoring</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div class="bg-white p-8 rounded-xl shadow-lg feature-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-6">
+                        <i data-feather="map-pin" class="text-blue-600 w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Geotagged Reporting</h3>
+                    <p class="text-gray-600">Citizens can submit precise location-based reports with photos, videos, and descriptions of observed ocean hazards.</p>
+                </div>
+                
+                <div class="bg-white p-8 rounded-xl shadow-lg feature-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-6">
+                        <i data-feather="bar-chart-2" class="text-green-600 w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Social Media Analytics</h3>
+                    <p class="text-gray-600">Real-time analysis of public discussions on social media to detect hazard-related trends and sentiment.</p>
+                </div>
+                
+                <div class="bg-white p-8 rounded-xl shadow-lg feature-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mb-6">
+                        <i data-feather="layers" class="text-purple-600 w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Interactive Dashboard</h3>
+                    <p class="text-gray-600">Dynamic visualization of hazard reports and social media activity on an interactive map with real-time updates.</p>
+                </div>
+                
+                <div class="bg-white p-8 rounded-xl shadow-lg feature-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center mb-6">
+                        <i data-feather="globe" class="text-yellow-600 w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Multilingual Support</h3>
+                    <p class="text-gray-600">Platform accessible in multiple regional languages to ensure inclusivity for all coastal communities.</p>
+                </div>
+                
+                <div class="bg-white p-8 rounded-xl shadow-lg feature-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-6">
+                        <i data-feather="wifi-off" class="text-red-600 w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Offline Capability</h3>
+                    <p class="text-gray-600">Functionality to collect data offline and sync when connectivity is restored, essential for remote areas.</p>
+                </div>
+                
+                <div class="bg-white p-8 rounded-xl shadow-lg feature-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center mb-6">
+                        <i data-feather="shield" class="text-indigo-600 w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Role-based Access</h3>
+                    <p class="text-gray-600">Secure access controls for citizens, volunteers, officials, and analysts with appropriate permissions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-3xl font-bold text-blue-900 mb-4">How OceanWatch Works</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">A comprehensive solution for real-time ocean hazard monitoring and response</p>
+            </div>
+            
+            <div class="flex flex-col md:flex-row items-center mb-16">
+                <div class="md:w-1/2 mb-10 md:mb-0" data-aos="fade-right">
+                    <img src="http://static.photos/technology/640x360/0107" alt="Reporting Interface" class="rounded-xl shadow-lg hovered-element">
+                </div>
+                <div class="md:w-1/2 md:pl-12" data-aos="fade-left">
+                    <div class="flex items-start mb-6">
+                        <div class="flex-shrink-0">
+                            <div class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white font-bold text-lg">1</div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-xl font-bold text-blue-900">Report Hazards</h3>
+                            <p class="mt-2 text-gray-600">Citizens and coastal residents report observed hazards through our mobile/web app with geotagged photos and descriptions.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start mb-6">
+                        <div class="flex-shrink-0">
+                            <div class="flex items-center justify-center h-12 w-12 rounded-md bg-green-500 text-white font-bold text-lg">2</div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-xl font-bold text-blue-900">Social Media Monitoring</h3>
+                            <p class="mt-2 text-gray-600">Our NLP engine analyzes social media feeds to detect relevant hazard discussions and public sentiment.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <div class="flex items-center justify-center h-12 w-12 rounded-md bg-purple-500 text-white font-bold text-lg">3</div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-xl font-bold text-blue-900">Real-time Dashboard</h3>
+                            <p class="mt-2 text-gray-600">Emergency responders access aggregated data through an interactive dashboard for situational awareness.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="py-20 bg-blue-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                <div data-aos="fade-up" data-aos-delay="100">
+                    <div class="text-4xl font-bold text-blue-700 mb-2">15K+</div>
+                    <div class="text-gray-600">Active Users</div>
+                </div>
+                <div data-aos="fade-up" data-aos-delay="200">
+                    <div class="text-4xl font-bold text-green-600 mb-2">8.2K</div>
+                    <div class="text-gray-600">Hazard Reports</div>
+                </div>
+                <div data-aos="fade-up" data-aos-delay="300">
+                    <div class="text-4xl font-bold text-purple-600 mb-2">96%</div>
+                    <div class="text-gray-600">Verification Rate</div>
+                </div>
+                <div data-aos="fade-up" data-aos-delay="400">
+                    <div class="text-4xl font-bold text-red-600 mb-2">24/7</div>
+                    <div class="text-gray-600">Monitoring</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="py-20 bg-gradient-to-r from-blue-700 to-blue-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6" data-aos="fade-up">Ready to Enhance Coastal Safety?</h2>
+            <p class="text-xl mb-10 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="100">Join thousands of citizens and emergency responders using OceanWatch for real-time hazard reporting and analysis.</p>
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6" data-aos="fade-up" data-aos-delay="200">
+                <button class="bg-white text-blue-700 px-8 py-4 rounded-lg font-bold text-lg hover:bg-blue-50 transition">Download Mobile App</button>
+                <a href="dashboard.html" 
+                 class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white hover:text-blue-700 transition">
+                 Access Web Dashboard
+                </a>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center mb-6">
+                        <i data-feather="navigation" class="text-blue-400 mr-2"></i>
+                        <span class="font-bold text-xl">OceanWatch</span>
+                    </div>
+                    <p class="text-gray-400 mb-6">Integrated platform for crowdsourced ocean hazard reporting and social media analytics.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white"><i data-feather="facebook"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i data-feather="twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i data-feather="instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i data-feather="linkedin"></i></a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-6">Platform</h3>
+                    <ul class="space-y-3">
+                        <li><a href="dashboard.html" class="text-gray-400 hover:text-white">Dashboard</a></li>
+                        <li><a href="report.html" class="text-gray-400 hover:text-white">Reporting</a></li>
+                        <li><a href="analytics.html" class="text-gray-400 hover:text-white">Analytics</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Mobile App</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">API Documentation</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-6">Resources</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-white">User Guides</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Training Materials</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Research Papers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">FAQ</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Support Center</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-6">Contact</h3>
+                    <ul class="space-y-3 text-gray-400">
+                        <li class="flex items-start">
+                            <i data-feather="map-pin" class="mr-2 mt-1 w-4 h-4"></i>
+                            <span>Indian National Centre for Ocean Information Services, Hyderabad</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i data-feather="phone" class="mr-2 w-4 h-4"></i>
+                            <span>+91 40 2388 1234</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i data-feather="mail" class="mr-2 w-4 h-4"></i>
+                            <span>info@oceanwatch.gov.in</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
+                <p>© 2023 OceanWatch. An initiative of Indian National Centre for Ocean Information Services (INCOIS).</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+        
+        // Initialize Feather Icons
+        feather.replace();
+        
+        // Initialize Vanta.js
+        VANTA.GLOBE({
+            el: "#hero-bg",
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.00,
+            minWidth: 200.00,
+            scale: 1.00,
+            scaleMobile: 1.00,
+            color: 0x3282b8,
+            color2: 0x0f4c75,
+            backgroundColor: 0x000000,
+            size: 1.00,
+            lineWidth: 1.00,
+            spacing: 17.00,
+            showDots: false
+        });
+    </script>
+</body>
+</html>

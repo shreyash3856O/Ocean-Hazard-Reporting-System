@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Analytics - OceanWatch</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50">
+
+  <!-- Navbar -->
+  <nav class="bg-white shadow-lg fixed w-full z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 flex items-center">
+            <i data-feather="navigation" class="text-blue-600 mr-2"></i>
+            <span class="font-bold text-xl text-blue-800">OceanWatch</span>
+          </div>
+          <div class="hidden md:ml-10 md:flex md:space-x-8">
+            <a href="ocean_index.html" class="text-gray-500 hover:text-gray-700 px-1 pt-1 text-sm font-medium">Home</a>
+            <a href="dashboard.html" class="text-gray-500 hover:text-gray-700 px-1 pt-1 text-sm font-medium">Dashboard</a>
+            <a href="report.html" class="text-gray-500 hover:text-gray-700 px-1 pt-1 text-sm font-medium">Reports</a>
+            <a href="analytics.html" class="text-blue-600 border-b-2 border-blue-600 px-1 pt-1 text-sm font-medium">Analytics</a>
+          </div>
+        </div>
+        <div class="flex items-center">
+          <button class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition">Sign In</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Analytics Dashboard</h1>
+
+    <!-- Stats Cards ke liyee -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h2 class="text-gray-500 text-sm">Total Reports</h2>
+        <p class="text-2xl font-bold text-blue-600">1,248</p>
+      </div>
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h2 class="text-gray-500 text-sm">Active Hazards</h2>
+        <p class="text-2xl font-bold text-red-500">7</p>
+      </div>
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h2 class="text-gray-500 text-sm">Trending Keyword</h2>
+        <p class="text-lg font-semibold text-gray-800">“High Tide”</p>
+      </div>
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h2 class="text-gray-500 text-sm">Sentiment</h2>
+        <p class="text-lg font-semibold text-green-600">Positive: 64%</p>
+      </div>
+    </div>
+
+    <!-- Charts Section (abhi ke liye nakli ig) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <!-- Reports Over Time -->
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h2 class="text-lg font-semibold mb-4">Reports Over Time</h2>
+        <canvas id="reportsChart" class="h-64"></canvas>
+      </div>
+
+      <!-- Keyword Frequency -->
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h2 class="text-lg font-semibold mb-4">Keyword Frequency</h2>
+        <canvas id="keywordsChart" class="h-64"></canvas>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Sentiment Analysis -->
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h2 class="text-lg font-semibold mb-4">Sentiment Analysis</h2>
+        <canvas id="sentimentChart" class="h-64"></canvas>
+      </div>
+
+      <!-- Reports by Location -->
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h2 class="text-lg font-semibold mb-4">Reports by Location</h2>
+        <canvas id="locationChart" class="h-64"></canvas>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Chart.js Scripts -->
+  <script>
+    feather.replace();
+
+    // Reports Over Time (Line Chart)
+    new Chart(document.getElementById('reportsChart'), {
+      type: 'line',
+      data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+          label: 'Reports',
+          data: [120, 200, 150, 300, 250, 400, 500],
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37, 99, 235, 0.2)',
+          fill: true,
+          tension: 0.3
+        }]
+      }
+    });
+
+    // Keyword Frequency (Bar Chart)
+    new Chart(document.getElementById('keywordsChart'), {
+      type: 'bar',
+      data: {
+        labels: ['High Tide', 'Storm Surge', 'Flooding', 'Tsunami', 'Coastal Damage'],
+        datasets: [{
+          label: 'Mentions',
+          data: [50, 75, 100, 25, 60],
+          backgroundColor: '#3b82f6'
+        }]
+      }
+    });
+
+    // Sentiment Analysis (Pie Chart)
+    new Chart(document.getElementById('sentimentChart'), {
+      type: 'pie',
+      data: {
+        labels: ['Positive', 'Neutral', 'Negative'],
+        datasets: [{
+          data: [64, 20, 16],
+          backgroundColor: ['#22c55e', '#facc15', '#ef4444']
+        }]
+      }
+    });
+
+    // Reports by Location (Bar Chart)
+    new Chart(document.getElementById('locationChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Mumbai', 'Chennai', 'Goa', 'Kochi', 'Vizag'],
+        datasets: [{
+          label: 'Reports',
+          data: [120, 180, 90, 60, 150],
+          backgroundColor: '#06b6d4'
+        }]
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventory Management System - Frontend Only</title>
+    <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
+                'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script>
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        // ==================== STORAGE & DATA ====================
+        const STORAGE_KEY = 'ims_data';
+
+        const defaultData = {
+            products: [
+                { id: '1', name: 'Laptop', sku: 'LAPTOP-001', quantity: 15, unitPrice: 1299.99, warehouseId: '1' },
+                { id: '2', name: 'Mouse', sku: 'MOUSE-001', quantity: 150, unitPrice: 29.99, warehouseId: '1' },
+                { id: '3', name: 'Keyboard', sku: 'KBD-001', quantity: 85, unitPrice: 89.99, warehouseId: '2' },
+                { id: '4', name: 'Monitor', sku: 'MON-001', quantity: 24, unitPrice: 349.99, warehouseId: '2' },
+                { id: '5', name: 'USB Cable', sku: 'USB-001', quantity: 500, unitPrice: 9.99, warehouseId: '1' },
+            ],
+            warehouses: [
+                { id: '1', name: 'Main Warehouse', location: 'New York' },
+                { id: '2', name: 'Secondary Warehouse', location: 'Los Angeles' },
+                { id: '3', name: 'Distribution Center', location: 'Chicago' },
+            ],
+            receipts: [
+                { id: '1', productId: '1', quantity: 10, date: '2024-11-20', warehouseId: '1' },
+            ],
+            deliveries: [
+                { id: '1', productId: '2', quantity: 25, date: '2024-11-21', warehouseId: '1' },
+            ],
+            transfers: [
+                { id: '1', productId: '3', quantity: 15, fromWarehouse: '1', toWarehouse: '2', date: '2024-11-19' },
+            ],
+            adjustments: [
+                { id: '1', productId: '1', quantity: 5, reason: 'Damage', date: '2024-11-18', warehouseId: '1' },
+            ],
+        };
+
+        const Storage = {
+            getData: () => {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                return stored ? JSON.parse(stored) : defaultData;
+            },
+            saveData: (data) => {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            },
+            reset: () => {
+                localStorage.removeItem(STORAGE_KEY);
+            },
+        };
+
+        // ==================== COMPONENTS ====================
+
+        function StatsCard({ title, value, icon }) {
+            return (
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">{title}</p>
+                            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">{value}</p>
+                        </div>
+                        <div className="text-3xl">{icon}</div>
+                    </div>
+                </div>
+            );
+        }
+
+        function Dashboard({ data }) {
+            const totalProducts = data.products.length;
+            const totalValue = data.products.reduce((sum, p) => sum + (p.quantity * p.unitPrice), 0).toFixed(2);
+            const lowStockCount = data.products.filter(p => p.quantity < 20).length;
+            const totalTransactions = data.receipts.length + data.deliveries.length + data.transfers.length + data.adjustments.length;
+
+            return (
+                <div className="space-y-6">
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <StatsCard title="Total Products" value={totalProducts} icon="📦" />
+                        <StatsCard title="Inventory Value" value={`$${totalValue}`} icon="💰" />
+                        <StatsCard title="Low Stock Items" value={lowStockCount} icon="⚠️" />
+                        <StatsCard title="Total Transactions" value={totalTransactions} icon="📊" />
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top Products by Value</h2>
+                            <div className="space-y-3">
+                                {data.products.sort((a, b) => (b.quantity * b.unitPrice) - (a.quantity * a.unitPrice)).slice(0, 5).map(p => (
+                                    <div key={p.id} className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                                        <span className="text-gray-700 dark:text-gray-300">{p.name}</span>
+                                        <span className="font-semibold text-gray-900 dark:text-white">${(p.quantity * p.unitPrice).toFixed(2)}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Stock by Warehouse</h2>
+                            <div className="space-y-3">
+                                {data.warehouses.map(w => {
+                                    const warehouseStock = data.products.filter(p => p.warehouseId === w.id).reduce((sum, p) => sum + p.quantity, 0);
+                                    return (
+                                        <div key={w.id} className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                                            <span className="text-gray-700 dark:text-gray-300">{w.name}</span>
+                                            <span className="font-semibold text-gray-900 dark:text-white">{warehouseStock} units</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function ProductsPage({ data, onSave }) {
+            const [products, setProducts] = useState(data.products);
+            const [editingId, setEditingId] = useState(null);
+            const [formData, setFormData] = useState({});
+            const [showForm, setShowForm] = useState(false);
+
+            const handleAddProduct = () => {
+                setEditingId(null);
+                setFormData({ warehouseId: data.warehouses[0]?.id });
+                setShowForm(true);
+            };
+
+            const handleEditProduct = (product) => {
+                setEditingId(product.id);
+                setFormData({ ...product });
+                setShowForm(true);
+            };
+
+            const handleSaveProduct = () => {
+                if (editingId) {
+                    const updated = products.map(p => p.id === editingId ? { ...formData, id: editingId } : p);
+                    setProducts(updated);
+                    onSave({ ...data, products: updated });
+                } else {
+                    const newProduct = { ...formData, id: String(Date.now()) };
+                    setProducts([...products, newProduct]);
+                    onSave({ ...data, products: [...products, newProduct] });
+                }
+                setShowForm(false);
+            };
+
+            const handleDeleteProduct = (id) => {
+                const updated = products.filter(p => p.id !== id);
+                setProducts(updated);
+                onSave({ ...data, products: updated });
+            };
+
+            return (
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Products</h1>
+                        <button
+                            onClick={handleAddProduct}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition"
+                        >
+                            + Add Product
+                        </button>
+                    </div>
+
+                    {showForm && (
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{editingId ? 'Edit' : 'Add'} Product</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <input
+                                    type="text"
+                                    placeholder="Product Name"
+                                    value={formData.name || ''}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="SKU"
+                                    value={formData.sku || ''}
+                                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                                    className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                />
+                                <input
+                                    type="number"
+                                    placeholder="Quantity"
+                                    value={formData.quantity || ''}
+                                    onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
+                                    className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                />
+                                <input
+                                    type="number"
+                                    placeholder="Unit Price"
+                                    value={formData.unitPrice || ''}
+                                    onChange={(e) => setFormData({ ...formData, unitPrice: parseFloat(e.target.value) })}
+                                    className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                />
+                                <select
+                                    value={formData.warehouseId || ''}
+                                    onChange={(e) => setFormData({ ...formData, warehouseId: e.target.value })}
+                                    className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                >
+                                    {data.warehouses.map(w => (
+                                        <option key={w.id} value={w.id}>{w.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="flex gap-2 mt-4">
+                                <button
+                                    onClick={handleSaveProduct}
+                                    className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition"
+                                >
+                                    Save
+                                </button>
+                                <button
+                                    onClick={() => setShowForm(false)}
+                                    className="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="overflow-x-auto">
+                        <table className="w-full border-collapse bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+                            <thead className="bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-gray-900 dark:text-white font-semibold">Product Name</th>
+                                    <th className="px-6 py-3 text-left text-gray-900 dark:text-white font-semibold">SKU</th>
+                                    <th className="px-6 py-3 text-left text-gray-900 dark:text-white font-semibold">Quantity</th>
+                                    <th className="px-6 py-3 text-left text-gray-900 dark:text-white font-semibold">Unit Price</th>
+                                    <th className="px-6 py-3 text-left text-gray-900 dark:text-white font-semibold">Total Value</th>
+                                    <th className="px-6 py-3 text-left text-gray-900 dark:text-white font-semibold">Warehouse</th>
+                                    <th className="px-6 py-3 text-left text-gray-900 dark:text-white font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {products.map(product => {
+                                    const warehouse = data.warehouses.find(w => w.id === product.warehouseId);
+                                    return (
+                                        <tr key={product.id} className="border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                            <td className="px-6 py-4 text-gray-900 dark:text-white">{product.name}</td>
+                                            <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{product.sku}</td>
+                                            <td className="px-6 py-4 text-gray-900 dark:text-white font-medium">{product.quantity}</td>
+                                            <td className="px-6 py-4 text-gray-900 dark:text-white">${product.unitPrice?.toFixed(2) || '0.00'}</td>
+                                            <td className="px-6 py-4 text-gray-900 dark:text-white font-semibold">${(product.quantity * product.unitPrice).toFixed(2)}</td>
+                                            <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{warehouse?.name}</td>
+                                            <td className="px-6 py-4 space-x-2">
+                                                <button
+                                                    onClick={() => handleEditProduct(product)}
+                                                    className="text-blue-600 hover:text-blue-800 font-medium"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteProduct(product.id)}
+                                                    className="text-red-600 hover:text-red-800 font-medium"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        }
+
+        function TransactionPage({ title, transactionKey, data, onSave, showProductField = true, showWarehouseField = true }) {
+            const [transactions, setTransactions] = useState(data[transactionKey] || []);
+            const [showForm, setShowForm] = useState(false);
+            const [formData, setFormData] = useState({});
+
+            const handleAddTransaction = () => {
+                setFormData({ warehouseId: data.warehouses[0]?.id, fromWarehouse: data.warehouses[0]?.id, toWarehouse: data.warehouses[1]?.id });
+                setShowForm(true);
+            };
+
+            const handleSaveTransaction = () => {
+                const newTransaction = { ...formData, id: String(Date.now()), date: new Date().toISOString().split('T')[0] };
+                const updated = [...transactions, newTransaction];
+                setTransactions(updated);
+                onSave({ ...data, [transactionKey]: updated });
+                setShowForm(false);
+                setFormData({});
+            };
+
+            const handleDeleteTransaction = (id) => {
+                const updated = transactions.filter(t => t.id !== id);
+                setTransactions(updated);
+                onSave({ ...data, [transactionKey]: updated });
+            };
+
+            return (
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{title}</h1>
+                        <button
+                            onClick={handleAddTransaction}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition"
+                        >
+                            + Add {title.slice(0, -1)}
+                        </button>
+                    </div>
+
+                    {showForm && (
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {showProductField && (
+                                    <select
+                                        value={formData.productId || ''}
+                                        onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
+                                        className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                    >
+                                        <option value="">Select Product</option>
+                                        {data.products.map(p => (
+                                            <option key={p.id} value={p.id}>{p.name}</option>
+                                        ))}
+                                    </select>
+                                )}
+                                <input
+                                    type="number"
+                                    placeholder="Quantity"
+                                    value={formData.quantity || ''}
+                                    onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
+                                    className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                />
+                                {transactionKey === 'transfers' ? (
+                                    <>
+                                        <select
+                                            value={formData.fromWarehouse || ''}
+                                            onChange={(e) => setFormData({ ...formData, fromWarehouse: e.target.value })}
+                                            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                        >
+                                            <option value="">From Warehouse</option>
+                                            {data.warehouses.map(w => (
+                                                <option key={w.id} value={w.id}>{w.name}</option>
+                                            ))}
+                                        </select>
+                                        <select
+                                            value={formData.toWarehouse || ''}
+                                            onChange={(e) => setFormData({ ...formData, toWarehouse: e.target.value })}
+                                            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                        >
+                                            <option value="">To Warehouse</option>
+                                            {data.warehouses.map(w => (
+                                                <option key={w.id} value={w.id}>{w.name}</option>
+                                            ))}
+                                        </select>
+                                    </>
+                                ) : transactionKey === 'adjustments' ? (
+                                    <>
+                                        <input
+                                            type="text"
+                                            placeholder="Reason"
+                                            value={formData.reason || ''}
+                                            onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                                            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                        />
+                                        <select
+                                            value={formData.warehouseId || ''}
+                                            onChange={(e) => setFormData({ ...formData, warehouseId: e.target.value })}
+                                            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                        >
+                                            <option value="">Select Warehouse</option>
+                                            {data.warehouses.map(w => (
+                                                <option key={w.id} value={w.id}>{w.name}</option>
+                                            ))}
+                                        </select>
+                                    </>
+                                ) : (
+                                    <select
+                                        value={formData.warehouseId || ''}
+                                        onChange={(e) => setFormData({ ...formData, warehouseId: e.target.value })}
+                                        className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                    >
+                                        <option value="">Select Warehouse</option>
+                                        {data.warehouses.map(w => (
+                                            <option key={w.id} value={w.id}>{w.name}</option>
+                                        ))}
+                                    </select>
+                                )}
+                            </div>
+                            <div className="flex gap-2 mt-4">
+                                <button
+                                    onClick={handleSaveTransaction}
+                                    className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition"
+                                >
+                                    Save
+                                </button>
+                                <button
+                                    onClick={() => setShowForm(false)}
+                                    className="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="overflow-x-auto">
+                        <table className="w-full border-collapse bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+                            <thead className="bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                                <tr>
+                                    {showProductField && <th className="px-6 py-3 text-left text-gray-900 dark:text-white font-semibold">Product</th>}
+                                    <th className="px-6 py-3 text-left text-gray-900 dark:text-white font-semibold">Quantity</th>
+                                    {transactionKey === 'transfers' ? (
+                                        <>
+                                            <th className="px-6 py-3 text-left text-gray-900 dark:text-white font-semibold">From</th>
+                                            <th className="px-6 py-3 text-left text-gray-900 dark:text-white font-semibold">To</th>
+                                        </>
+                                    ) : transactionKey === 'adjustments' ? (
+                                        <>
+                                            <th className="px-6 py-3 text-left text-gray-900 dark:text-white font-semibold">Reason</th>
+                                            <th className="px-6 py-3 text-left text-gray-900 dark:text-white font-semibold">Warehouse</th>
+                                        </>
+                                    ) : (
+                                        <th className="px-6 py-3 text-left text-gray-900 dark:text-white font-semibold">Warehouse</th>
+                                    )}
+                                    <th className="px-6 py-3 text-left text-gray-900 dark:text-white font-semibold">Date</th>
+                                    <th className="px-6 py-3 text-left text-gray-900 dark:text-white font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {transactions.map(transaction => {
+                                    const product = data.products.find(p => p.id === transaction.productId);
+                                    const warehouse = data.warehouses.find(w => w.id === transaction.warehouseId);
+                                    const fromWh = data.warehouses.find(w => w.id === transaction.fromWarehouse);
+                                    const toWh = data.warehouses.find(w => w.id === transaction.toWarehouse);
+
+                                    return (
+                                        <tr key={transaction.id} className="border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                            {showProductField && <td className="px-6 py-4 text-gray-900 dark:text-white">{product?.name}</td>}
+                                            <td className="px-6 py-4 text-gray-900 dark:text-white font-medium">{transaction.quantity}</td>
+                                            {transactionKey === 'transfers' ? (
+                                                <>
+                                                    <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{fromWh?.name}</td>
+                                                    <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{toWh?.name}</td>
+                                                </>
+                                            ) : transactionKey === 'adjustments' ? (
+                                                <>
+                                                    <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{transaction.reason}</td>
+                                                    <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{warehouse?.name}</td>
+                                                </>
+                                            ) : (
+                                                <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{warehouse?.name}</td>
+                                            )}
+                                            <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{transaction.date}</td>
+                                            <td className="px-6 py-4">
+                                                <button
+                                                    onClick={() => handleDeleteTransaction(transaction.id)}
+                                                    className="text-red-600 hover:text-red-800 font-medium"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        }
+
+        // ==================== MAIN APP ====================
+
+        function App() {
+            const [data, setData] = useState(() => Storage.getData());
+            const [currentPage, setCurrentPage] = useState('dashboard');
+            const [isDarkMode, setIsDarkMode] = useState(false);
+
+            const handleSaveData = (newData) => {
+                setData(newData);
+                Storage.saveData(newData);
+            };
+
+            const handleResetData = () => {
+                if (confirm('Reset all data to defaults?')) {
+                    Storage.reset();
+                    setData(defaultData);
+                }
+            };
+
+            useEffect(() => {
+                if (isDarkMode) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }, [isDarkMode]);
+
+            return (
+                <div className={isDarkMode ? 'dark' : ''}>
+                    <div className="flex h-screen bg-white dark:bg-gray-900">
+                        {/* Sidebar */}
+                        <div className="w-64 bg-gray-900 dark:bg-gray-950 text-white shadow-lg flex flex-col">
+                            <div className="p-6 border-b border-gray-700">
+                                <h1 className="text-xl font-bold">IMS</h1>
+                                <p className="text-sm text-gray-400">Frontend Only</p>
+                            </div>
+
+                            <nav className="flex-1 p-4 space-y-2">
+                                {[
+                                    { key: 'dashboard', label: '📊 Dashboard' },
+                                    { key: 'products', label: '📦 Products' },
+                                    { key: 'receipts', label: '📥 Receipts' },
+                                    { key: 'deliveries', label: '📤 Deliveries' },
+                                    { key: 'transfers', label: '🔄 Transfers' },
+                                    { key: 'adjustments', label: '✏️ Adjustments' },
+                                ].map(item => (
+                                    <button
+                                        key={item.key}
+                                        onClick={() => setCurrentPage(item.key)}
+                                        className={`w-full text-left px-4 py-2 rounded-lg transition ${
+                                            currentPage === item.key
+                                                ? 'bg-blue-600 text-white'
+                                                : 'text-gray-300 hover:bg-gray-800'
+                                        }`}
+                                    >
+                                        {item.label}
+                                    </button>
+                                ))}
+                            </nav>
+
+                            <div className="p-4 border-t border-gray-700 space-y-2">
+                                <button
+                                    onClick={() => setIsDarkMode(!isDarkMode)}
+                                    className="w-full text-left px-4 py-2 rounded-lg text-gray-300 hover:bg-gray-800 transition"
+                                >
+                                    {isDarkMode ? '☀️ Light' : '🌙 Dark'}
+                                </button>
+                                <button
+                                    onClick={handleResetData}
+                                    className="w-full text-left px-4 py-2 rounded-lg text-gray-300 hover:bg-red-900 transition text-sm"
+                                >
+                                    🔄 Reset Data
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Main Content */}
+                        <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
+                            <div className="p-8 max-w-7xl">
+                                {currentPage === 'dashboard' && <Dashboard data={data} />}
+                                {currentPage === 'products' && <ProductsPage data={data} onSave={handleSaveData} />}
+                                {currentPage === 'receipts' && <TransactionPage title="Receipts" transactionKey="receipts" data={data} onSave={handleSaveData} />}
+                                {currentPage === 'deliveries' && <TransactionPage title="Deliveries" transactionKey="deliveries" data={data} onSave={handleSaveData} />}
+                                {currentPage === 'transfers' && <TransactionPage title="Transfers" transactionKey="transfers" data={data} onSave={handleSaveData} showWarehouseField={false} />}
+                                {currentPage === 'adjustments' && <TransactionPage title="Adjustments" transactionKey="adjustments" data={data} onSave={handleSaveData} />}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Render App
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
